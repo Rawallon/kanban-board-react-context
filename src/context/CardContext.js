@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useReducer } from 'react';
+import CardReducer from '../reducer/CardReducer';
 
 const cardsInitialState = [
   {
@@ -26,27 +27,22 @@ const cardsInitialState = [
 export const CardsContext = createContext({});
 
 export function CardsContextProvider({ children }) {
-  const [currentCards, setCurrentCards] = useState(cardsInitialState);
+  const [cardReducer, cardDispatch] = useReducer(
+    CardReducer,
+    cardsInitialState,
+  );
 
   function moveCard(cardId, toId, closestId) {
-    var cIndex = currentCards.findIndex((c) => c.id === cardId);
-    var insertIndex;
-    if (closestId) {
-      insertIndex = currentCards.findIndex((c) => c.id === closestId);
-      insertIndex = insertIndex > 1 ? insertIndex - 1 : insertIndex;
-    } else {
-      insertIndex = currentCards.length - 1;
-    }
-    var newCards = Array.from(currentCards);
-    const cCard = newCards.splice(cIndex, 1)[0];
-    cCard.list = toId;
-    newCards.splice(Number(insertIndex), 0, cCard);
-    setCurrentCards(newCards);
+    cardDispatch({
+      type: 'MOVE_CARD',
+      payload: { cardId, toId, closestId },
+    });
   }
+
   return (
     <CardsContext.Provider
       value={{
-        currentCards,
+        currentCards: cardReducer,
         moveCard,
       }}>
       {children}
